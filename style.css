@@ -193,6 +193,55 @@ button {
   color: var(--text);
 }
 
+/* BONUS: filter & pencarian */
+.filter {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0 12px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.filter > * {
+  min-width: 0; /* supaya input date tidak memaksa kolom grid melebar */
+}
+
+.filter .field {
+  margin-bottom: 10px;
+}
+
+.filter-lebar {
+  grid-column: 1 / -1; /* membentang dari kolom pertama sampai terakhir */
+}
+
+#btn-hapus-filter {
+  background: var(--border);
+  color: var(--text);
+}
+
+/* BONUS: ekspor / impor JSON */
+#btn-ekspor,
+#btn-impor {
+  flex: 1;
+  background: var(--border);
+  color: var(--text);
+}
+
+#pesan-backup {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+#pesan-backup:empty {
+  display: none;
+}
+
+#pesan-backup.gagal {
+  color: var(--keluar);
+}
+
 /* Daftar transaksi (class ini dipakai saat JS me-render <li>) */
 #daftar-transaksi {
   list-style: none;
@@ -219,6 +268,7 @@ button {
 }
 
 .transaksi-info {
+  flex: 1; /* ambil semua sisa ruang → nominal & tombol hapus terdorong rata kanan */
   min-width: 0;
 }
 
@@ -270,6 +320,39 @@ button {
   background: transparent;
   color: var(--keluar);
   border: 1px solid var(--keluar);
+}
+
+/* BONUS: responsif untuk layar HP kecil (360px) */
+@media (max-width: 480px) {
+  main {
+    padding: 12px;
+  }
+
+  main > section {
+    padding: 12px;
+  }
+
+  .app-header h1 {
+    font-size: 1.2rem;
+  }
+
+  dd {
+    font-size: 1rem;
+    overflow-wrap: anywhere;
+  }
+
+  /* info transaksi di baris pertama, nominal + tombol hapus di baris kedua */
+  .transaksi-item {
+    flex-wrap: wrap;
+  }
+
+  .transaksi-info {
+    flex-basis: 100%;
+  }
+
+  .transaksi-nominal {
+    margin-right: auto; /* dorong tombol hapus ke kanan */
+  }
 }
 
 footer {

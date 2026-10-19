@@ -19,6 +19,22 @@ const elKhasPendapatan = document.querySelector("#khas-pendapatan");
 const elKhasOperasional = document.querySelector("#khas-operasional");
 const elKhasBersih = document.querySelector("#khas-bersih");
 
+// BONUS: elemen filter
+const formFilter = document.querySelector("#form-filter");
+const filterJenis = document.querySelector("#filter-jenis");
+const filterSifat = document.querySelector("#filter-sifat");
+const filterKategori = document.querySelector("#filter-kategori");
+const filterDari = document.querySelector("#filter-dari");
+const filterSampai = document.querySelector("#filter-sampai");
+const filterCari = document.querySelector("#filter-cari");
+const btnHapusFilter = document.querySelector("#btn-hapus-filter");
+
+// BONUS: elemen ekspor / impor
+const btnEkspor = document.querySelector("#btn-ekspor");
+const btnImpor = document.querySelector("#btn-impor");
+const inputImpor = document.querySelector("#input-impor");
+const pesanBackup = document.querySelector("#pesan-backup");
+
 // ---------- State: semua transaksi ada di array ini ----------
 let daftarTransaksi = [];
 
@@ -212,6 +228,8 @@ function validasiForm(data) {
   // !(x > 0) juga menangkap NaN dan 0 (input kosong → Number("") = 0)
   if (!(data.nominal > 0)) {
     error.nominal = "Nominal harus lebih dari 0.";
+  } else if (!Number.isInteger(data.nominal)) {
+    error.nominal = "Nominal harus bilangan bulat.";
   }
 
   return error;
@@ -263,9 +281,119 @@ function renderKhas(hasil) {
   elKhasBersih.classList.toggle("negatif", hasil.bersih < 0); // merah jika rugi
 }
 
+// BONUS: salin semua kategori dari form tambah ke select filter kategori,
+// supaya daftar kategori cukup ditulis sekali di HTML
+function isiOpsiFilterKategori() {
+  inputKategori.querySelectorAll("option").forEach((opsi) => {
+    if (opsi.value === "") return; // lewati "-- Pilih kategori --"
+
+    const opsiBaru = document.createElement("option");
+    opsiBaru.value = opsi.value;
+    opsiBaru.textContent = opsi.value;
+    filterKategori.appendChild(opsiBaru);
+  });
+}
+
+// BONUS: kembalikan transaksi yang lolos SEMUA filter yang sedang diisi.
+// Filter yang kosong ("") dianggap "semua" sehingga dilewati.
+function terapkanFilter(daftar) {
+  const jenis = filterJenis.value;
+  const sifat = filterSifat.value;
+  const kategori = filterKategori.value;
+  const dari = filterDari.value;
+  const sampai = filterSampai.value;
+  const kataKunci = filterCari.value.trim().toLowerCase();
+
+  return daftar.filter((t) => {
+    if (jenis && t.jenis !== jenis) return false;
+    if (sifat && t.sifat !== sifat) return false;
+    if (kategori && t.kategori !== kategori) return false;
+    if (dari && t.tanggal < dari) return false; // "YYYY-MM-DD" bisa dibandingkan seperti teks
+    if (sampai && t.tanggal > sampai) return false;
+    if (kataKunci && !t.catatan.toLowerCase().includes(kataKunci)) return false;
+    return true;
+  });
+}
+
+// BONUS: tampilkan pesan hasil ekspor/impor di halaman (bukan alert)
+function tampilkanPesanBackup(pesan, gagal) {
+  pesanBackup.textContent = pesan;
+  pesanBackup.classList.toggle("gagal", gagal);
+}
+
+// BONUS: unduh semua transaksi sebagai file .json
+function eksporJSON() {
+  const teks = JSON.stringify(daftarTransaksi, null, 2); // null, 2 = rapi dengan indentasi 2 spasi
+  const blob = new Blob([teks], { type: "application/json" }); // teks → "file" di memori
+  const url = URL.createObjectURL(blob); // alamat sementara untuk file itu
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `transaksi-ojol-${tanggalHariIni()}.json`; // nama file unduhan
+  link.click(); // klik otomatis → browser mengunduh
+  URL.revokeObjectURL(url); // bebaskan memori
+
+  tampilkanPesanBackup(`${daftarTransaksi.length} transaksi diekspor.`, false);
+}
+
+// BONUS: cek satu objek hasil impor; harus punya bentuk yang sama dengan transaksi kita
+function transaksiValid(t) {
+  return (
+    typeof t === "object" &&
+    t !== null &&
+    typeof t.id === "number" &&
+    typeof t.nominal === "number" &&
+    typeof t.catatan === "string" &&
+    Object.keys(validasiForm(t)).length === 0 // pakai ulang validasi W6
+  );
+}
+
+// BONUS: baca file .json pilihan user, lalu ganti data sekarang dengan isinya
+function imporJSON(file) {
+  const reader = new FileReader();
+
+  // "load" terpicu setelah file selesai dibaca (proses baca file tidak langsung selesai)
+  reader.addEventListener("load", () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!Array.isArray(data)) {
+        throw new Error("Isi file bukan array");
+      }
+
+      const dataValid = data.filter(transaksiValid);
+      const yakin = confirm(
+        `Impor ${dataValid.length} transaksi? Data yang sekarang akan diganti.`
+      );
+      if (!yakin) return;
+
+      daftarTransaksi = dataValid;
+      simpanData(daftarTransaksi);
+      renderSemua();
+
+      const dilewati = data.length - dataValid.length;
+      tampilkanPesanBackup(
+        `${dataValid.length} transaksi diimpor` +
+          (dilewati > 0 ? `, ${dilewati} data tidak valid dilewati.` : "."),
+        false
+      );
+    } catch (error) {
+      tampilkanPesanBackup("Gagal impor: file bukan JSON transaksi yang valid.", true);
+    }
+  });
+
+  reader.readAsText(file);
+}
+
 // Satu pintu untuk memperbarui SEMUA tampilan setiap kali data berubah
 function renderSemua() {
-  renderDaftar(daftarTransaksi);
+  // BONUS filter: daftar hanya menampilkan hasil filter,
+  // ringkasan & fitur khas tetap menghitung SEMUA transaksi
+  const hasilFilter = terapkanFilter(daftarTransaksi);
+  pesanKosong.textContent =
+    daftarTransaksi.length === 0
+      ? "Belum ada transaksi."
+      : "Tidak ada transaksi yang cocok dengan filter.";
+  renderDaftar(hasilFilter);
   renderRingkasan(hitungRingkasan(daftarTransaksi));
   renderKhas(hitungBersihHariIni(daftarTransaksi));
 }
@@ -324,11 +452,42 @@ form.addEventListener("reset", () => {
   });
 });
 
+// BONUS filter: setiap isi filter berubah, render ulang
+// (event "input" dari select/input di dalam form ikut naik/bubbling ke form)
+formFilter.addEventListener("input", renderSemua);
+
+// cegah halaman reload jika user menekan Enter di kotak pencarian
+formFilter.addEventListener("submit", (event) => {
+  event.preventDefault();
+});
+
+btnHapusFilter.addEventListener("click", () => {
+  formFilter.reset(); // kosongkan semua filter
+  renderSemua();
+});
+
+// BONUS ekspor / impor
+btnEkspor.addEventListener("click", eksporJSON);
+
+// tombol "Impor JSON" membuka jendela pilih file milik <input type="file"> yang tersembunyi
+btnImpor.addEventListener("click", () => {
+  inputImpor.click();
+});
+
+inputImpor.addEventListener("change", () => {
+  const file = inputImpor.files[0];
+  if (file) {
+    imporJSON(file);
+  }
+  inputImpor.value = ""; // kosongkan supaya file yang sama bisa dipilih lagi
+});
+
 // ---------- Inisialisasi saat halaman dibuka ----------
 
 // defaultValue = nilai yang dipakai lagi setiap kali form di-reset
 inputTanggal.defaultValue = tanggalHariIni();
 inputTanggal.value = tanggalHariIni();
 aturKategori();
+isiOpsiFilterKategori();
 daftarTransaksi = muatData(); // W4: baca data lama saat halaman dibuka / di-refresh
 renderSemua();

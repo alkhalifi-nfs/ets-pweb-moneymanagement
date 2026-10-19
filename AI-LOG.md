@@ -64,7 +64,7 @@
   - app.js: `renderRingkasan(ringkasan)` memakai `formatRupiah` dan `classList.toggle("negatif", ...)`
   - app.js: `renderSemua()` sebagai satu pintu render; pemanggilan `renderDaftar(daftarTransaksi)` di submit, hapus, dan inisialisasi diganti `renderSemua()`
   - style.css: selector `#saldo.negatif` ditambahkan ke aturan `#khas-bersih.negatif` (saldo minus berwarna merah)
-- Diubah: <!-- TODO: isi sendiri setelah dites -->
+- Diubah: -
 
 ## 8. Fitur khas — Pendapatan bersih hari ini
 
@@ -73,7 +73,7 @@
   - `hitungBersihHariIni(daftar)`: `filter` transaksi dengan tanggal = `tanggalHariIni()`, lalu `filter` + `reduce` untuk pendapatan dan pengeluaran yang `sifat === "operasional"`; bersih = pendapatan − operasional
   - `renderKhas(hasil)`: isi tiga `<dd>` di `#fitur-khas` dengan `formatRupiah`, dan `classList.toggle("negatif", ...)` jika bersih minus
   - Satu baris `renderKhas(hitungBersihHariIni(daftarTransaksi))` ditambahkan di `renderSemua()`
-- Diubah: <!-- TODO: isi sendiri setelah dites -->
+- Diubah: -
 
 ## 9. W6 — Validasi form
 
@@ -82,4 +82,26 @@
   - `validasiForm(data)` mengembalikan objek error per field: tanggal, jenis, kategori wajib; sifat wajib hanya untuk pengeluaran; nominal dicek dengan `!(nominal > 0)` supaya `NaN` juga tertangkap
   - `tampilkanError(error)` menulis pesan ke `#error-<field>` dan `classList.toggle("invalid", ...)` ke `#input-<field>`; `tampilkanError({})` menghapus semua pesan
   - Di listener submit: `if (Object.keys(error).length > 0) { tampilkanError(error); return; }` sebelum `push`; di listener reset: `tampilkanError({})`
-- Diubah: <!-- TODO: isi sendiri setelah dites -->
+- Diubah: hasil AI masih meloloskan nominal desimal. Saya minta AI menambahkan `else if (!Number.isInteger(data.nominal))` dengan pesan "Nominal harus bilangan bulat." di `validasiForm()`. Penjelasannya ada di bug 4 PROSES.md.
+
+## 10. Bonus — Filter & pencarian, responsif 360px
+
+- Prompt: "Sekarang buatkan aku fitur bonusnya, responsif 360px dan filter."
+- Dipakai:
+  - index.html: `<form id="form-filter">` berisi filter jenis, sifat, kategori, rentang tanggal, cari catatan, dan tombol "Hapus filter"
+  - app.js: `isiOpsiFilterKategori()` (menyalin opsi kategori dari form tambah), `terapkanFilter(daftar)` (`filter` dengan beberapa syarat, `includes` + `toLowerCase` untuk pencarian), pesan kosong yang dibedakan, dan listener `input`/`submit` di form filter serta `click` di tombol hapus filter
+  - app.js: `renderSemua()` merender daftar dari hasil filter, sedangkan ringkasan & fitur khas tetap dari semua data
+  - style.css: grid untuk `.filter`, dan `@media (max-width: 480px)` (padding lebih kecil, item transaksi `flex-wrap`)
+- Diubah: -
+
+## 11. Bonus — Ekspor / impor JSON
+
+- Prompt: "Lanjut buatkan fitur ekspor/impor JSON."
+- Dipakai:
+  - index.html: section "Backup Data" dengan tombol Ekspor/Impor, `<input type="file" hidden>`, dan `<p id="pesan-backup">`
+  - app.js: `eksporJSON()` memakai `JSON.stringify(..., null, 2)`, `Blob`, `URL.createObjectURL`, dan `<a download>`
+  - app.js: `transaksiValid(t)` mengecek tipe dengan `typeof` dan memakai ulang `validasiForm()` dari W6
+  - app.js: `imporJSON(file)` memakai `FileReader` + event `load`, `JSON.parse` di dalam `try/catch`, `filter(transaksiValid)`, `confirm`, lalu `simpanData` + `renderSemua`
+  - app.js: listener tombol ekspor, tombol impor (`inputImpor.click()`), dan `change` pada input file
+  - style.css: gaya tombol ekspor/impor dan pesan backup
+- Diubah: -

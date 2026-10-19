@@ -137,8 +137,61 @@
     <!-- W2 + W3: daftar transaksi, di-render dari JS ke #daftar-transaksi -->
     <section id="daftar-section" aria-labelledby="judul-daftar">
       <h2 id="judul-daftar">Daftar Transaksi</h2>
+
+      <!-- BONUS: filter & pencarian. Hanya memengaruhi daftar, ringkasan tetap menghitung semua data -->
+      <form id="form-filter" class="filter" aria-label="Filter transaksi">
+        <div class="field">
+          <label for="filter-jenis">Jenis</label>
+          <select id="filter-jenis">
+            <option value="">Semua</option>
+            <option value="pemasukan">Pemasukan</option>
+            <option value="pengeluaran">Pengeluaran</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="filter-sifat">Sifat</label>
+          <select id="filter-sifat">
+            <option value="">Semua</option>
+            <option value="operasional">Operasional</option>
+            <option value="pribadi">Pribadi</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="filter-kategori">Kategori</label>
+          <!-- opsi kategori diisi JS dari select kategori di form tambah -->
+          <select id="filter-kategori">
+            <option value="">Semua</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="filter-dari">Dari tanggal</label>
+          <input type="date" id="filter-dari">
+        </div>
+        <div class="field">
+          <label for="filter-sampai">Sampai tanggal</label>
+          <input type="date" id="filter-sampai">
+        </div>
+        <div class="field filter-lebar">
+          <label for="filter-cari">Cari catatan</label>
+          <input type="text" id="filter-cari" placeholder="Contoh: pertalite">
+        </div>
+        <button type="button" id="btn-hapus-filter" class="filter-lebar">Hapus filter</button>
+      </form>
+
       <p id="daftar-kosong">Belum ada transaksi.</p>
       <ul id="daftar-transaksi"></ul>
+    </section>
+
+    <!-- BONUS: ekspor / impor JSON sebagai backup -->
+    <section id="backup-section" aria-labelledby="judul-backup">
+      <h2 id="judul-backup">Backup Data</h2>
+      <div class="actions">
+        <button type="button" id="btn-ekspor">Ekspor JSON</button>
+        <button type="button" id="btn-impor">Impor JSON</button>
+        <!-- input file disembunyikan; dibuka lewat tombol "Impor JSON" -->
+        <input type="file" id="input-impor" accept=".json,application/json" hidden>
+      </div>
+      <p id="pesan-backup" role="status"></p>
     </section>
 
   </main>

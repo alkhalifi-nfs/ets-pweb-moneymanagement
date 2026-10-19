@@ -60,3 +60,9 @@ Awalnya semua kategori ada dalam satu daftar, sehingga user bisa mencatat "Bensi
 - **Dugaan awal saya (salah):** `inputKategori.value` tidak dikosongkan saat reset. Ternyata nilainya sudah ikut kosong karena `form.reset()` mengembalikan nilai semua field.
 - **Penyebab sebenarnya:** `form.reset()` hanya mengembalikan **nilai** field, tidak mengubah properti `disabled` pada `<optgroup>`. Kasusnya sama dengan `hidden` pada fieldset sifat. Selain itu, `aturKategori()` tidak bisa langsung dipanggil di listener `reset`, karena event `reset` terpicu **sebelum** nilai dikembalikan. Akibatnya `inputJenis.value` di dalam listener masih berisi jenis lama, dan grup yang salah malah aktif lagi.
 - **Solusi:** di listener `reset`, semua `<optgroup>` langsung dinonaktifkan (`grup.disabled = true`), karena setelah reset jenis pasti kosong.
+
+### 4. Nominal desimal lolos validasi
+
+- **Gejala:** nominal `1500.5` bisa disimpan, lalu tampil di daftar sebagai "Rp 1.501" karena `formatRupiah()` membulatkan (`maximumFractionDigits: 0`). Angka yang terlihat jadi tidak sama dengan angka yang tersimpan dan dijumlahkan, padahal Rupiah tidak memakai sen.
+- **Penyebab:** di HTML input nominal sudah diberi `step="1"`, tetapi aturan itu tidak berlaku karena form memakai `novalidate`, sehingga semua validasi diserahkan ke JS. Sementara itu `validasiForm()` hanya mengecek `nominal > 0`, dan `1500.5 > 0` bernilai `true`.
+- **Solusi:** di `validasiForm()` ditambahkan pengecekan `else if (!Number.isInteger(data.nominal))` dengan pesan "Nominal harus bilangan bulat.". Dipakai `else if` supaya kalau nominal kosong atau ≤ 0, yang tampil tetap pesan "harus lebih dari 0". Karena `transaksiValid()` (impor JSON) memakai ulang `validasiForm()`, transaksi bernominal desimal dari file impor juga ikut tertolak.
