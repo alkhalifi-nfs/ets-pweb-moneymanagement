@@ -1,5 +1,3 @@
-# PROSES
-
 ## Persona dan masalahnya
 
 Saya mendapat persona driver ojek online. Situasi dari driver ojek online memiliki beberapa masalah diantaranya adalah pendapatan harian yang tidak tetap dan bensin dan servis memakan sebagian besar pendapatan. Karena situasi tersebut fitur khas yang harus ada dalam aplikasi yang akan dibuat adalah menandai pengeluaran sebagai "operasional" dan "pribadi" serta menampilkan pendapatan bersih hari ini. Dimana pendapatan bersih merupakan pendapatan - biaya operasional.
@@ -10,7 +8,7 @@ Semua transaksi disimpan di localStorage dengan key `"transaksi-ojol"` sebagai *
 
 ```js
 {
-  id: 1760864000000,          // Date.now() saat transaksi dibuat, unik
+  id: 1760864000000,          // Date.now() saat transaksi dibuat
   tanggal: "2026-10-19",      // string YYYY-MM-DD dari <input type="date">
   jenis: "pengeluaran",       // "pemasukan" | "pengeluaran"
   sifat: "operasional",       // "operasional" | "pribadi" | null (null jika pemasukan)
@@ -56,4 +54,9 @@ Awalnya semua kategori ada dalam satu daftar, sehingga user bisa mencatat "Bensi
 - **Gejala:** `#khas-bersih` selalu hijau, padahal pendapatan bersih bisa negatif (misalnya hari ini servis besar tetapi order sedikit).
 - **Solusi:** ditambahkan aturan `#khas-bersih.negatif { color: var(--keluar); }`. Nanti JS menambah atau menghapus class `negatif` sesuai hasil hitungan.
 
-<!-- Tambahkan bug lain yang ditemui saat mengerjakan JS di sini -->
+### 3. Kategori yang salah masih bisa dipilih setelah form di-reset
+
+- **Gejala:** saya menambahkan fungsi `aturKategori()` yang menonaktifkan `<optgroup>` yang tidak sesuai dengan jenis. Saat dites, setelah memilih jenis Pengeluaran lalu klik Reset, jenis kembali ke "-- Pilih jenis --" tetapi kategori Pengeluaran masih bisa dipilih.
+- **Dugaan awal saya (salah):** `inputKategori.value` tidak dikosongkan saat reset. Ternyata nilainya sudah ikut kosong karena `form.reset()` mengembalikan nilai semua field.
+- **Penyebab sebenarnya:** `form.reset()` hanya mengembalikan **nilai** field, tidak mengubah properti `disabled` pada `<optgroup>`. Kasusnya sama dengan `hidden` pada fieldset sifat. Selain itu, `aturKategori()` tidak bisa langsung dipanggil di listener `reset`, karena event `reset` terpicu **sebelum** nilai dikembalikan. Akibatnya `inputJenis.value` di dalam listener masih berisi jenis lama, dan grup yang salah malah aktif lagi.
+- **Solusi:** di listener `reset`, semua `<optgroup>` langsung dinonaktifkan (`grup.disabled = true`), karena setelah reset jenis pasti kosong.
