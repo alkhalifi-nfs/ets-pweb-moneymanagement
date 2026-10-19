@@ -12,6 +12,12 @@ const inputNominal = document.querySelector("#input-nominal");
 const inputCatatan = document.querySelector("#input-catatan");
 const wadahDaftar = document.querySelector("#daftar-transaksi");
 const pesanKosong = document.querySelector("#daftar-kosong");
+const elTotalPemasukan = document.querySelector("#total-pemasukan");
+const elTotalPengeluaran = document.querySelector("#total-pengeluaran");
+const elSaldo = document.querySelector("#saldo");
+const elKhasPendapatan = document.querySelector("#khas-pendapatan");
+const elKhasOperasional = document.querySelector("#khas-operasional");
+const elKhasBersih = document.querySelector("#khas-bersih");
 
 // ---------- State: semua transaksi ada di array ini ----------
 let daftarTransaksi = [];
@@ -161,12 +167,115 @@ function renderDaftar(daftar) {
   });
 }
 
+// W5: hitung total pemasukan, total pengeluaran, dan saldo
+function hitungRingkasan(daftar) {
+  const totalPemasukan = daftar
+    .filter((t) => t.jenis === "pemasukan")
+    .reduce((total, t) => total + t.nominal, 0);
+
+  const totalPengeluaran = daftar
+    .filter((t) => t.jenis === "pengeluaran")
+    .reduce((total, t) => total + t.nominal, 0);
+
+  return {
+    totalPemasukan: totalPemasukan,
+    totalPengeluaran: totalPengeluaran,
+    saldo: totalPemasukan - totalPengeluaran,
+  };
+}
+
+// W5: tampilkan hasil hitungRingkasan() ke bagian Ringkasan
+function renderRingkasan(ringkasan) {
+  elTotalPemasukan.textContent = formatRupiah(ringkasan.totalPemasukan);
+  elTotalPengeluaran.textContent = formatRupiah(ringkasan.totalPengeluaran);
+  elSaldo.textContent = formatRupiah(ringkasan.saldo);
+  elSaldo.classList.toggle("negatif", ringkasan.saldo < 0); // merah jika minus
+}
+
+// W6: periksa objek transaksi, kembalikan objek berisi pesan error per field.
+// Objek kosong {} artinya semua valid.
+function validasiForm(data) {
+  const error = {};
+
+  if (!data.tanggal) {
+    error.tanggal = "Tanggal wajib diisi.";
+  }
+  if (!data.jenis) {
+    error.jenis = "Pilih jenis transaksi.";
+  }
+  if (data.jenis === "pengeluaran" && !data.sifat) {
+    error.sifat = "Pilih operasional atau pribadi.";
+  }
+  if (!data.kategori) {
+    error.kategori = "Pilih kategori.";
+  }
+  // !(x > 0) juga menangkap NaN dan 0 (input kosong → Number("") = 0)
+  if (!(data.nominal > 0)) {
+    error.nominal = "Nominal harus lebih dari 0.";
+  }
+
+  return error;
+}
+
+// W6: tulis pesan error ke <p id="error-..."> dan beri border merah pada inputnya.
+// tampilkanError({}) = hapus semua pesan error.
+function tampilkanError(error) {
+  const daftarField = ["tanggal", "jenis", "sifat", "kategori", "nominal"];
+
+  daftarField.forEach((field) => {
+    const pesan = error[field] || ""; // tidak ada error → string kosong
+    document.querySelector(`#error-${field}`).textContent = pesan;
+
+    // "sifat" berupa radio, tidak punya #input-sifat → dilewati
+    const input = document.querySelector(`#input-${field}`);
+    if (input) {
+      input.classList.toggle("invalid", pesan !== "");
+    }
+  });
+}
+
+// FITUR KHAS: pendapatan bersih hari ini = pendapatan hari ini - biaya operasional hari ini
+function hitungBersihHariIni(daftar) {
+  const hariIni = tanggalHariIni();
+  const transaksiHariIni = daftar.filter((t) => t.tanggal === hariIni);
+
+  const pendapatan = transaksiHariIni
+    .filter((t) => t.jenis === "pemasukan")
+    .reduce((total, t) => total + t.nominal, 0);
+
+  // hanya pengeluaran OPERASIONAL; pengeluaran pribadi tidak dikurangkan
+  const operasional = transaksiHariIni
+    .filter((t) => t.jenis === "pengeluaran" && t.sifat === "operasional")
+    .reduce((total, t) => total + t.nominal, 0);
+
+  return {
+    pendapatan: pendapatan,
+    operasional: operasional,
+    bersih: pendapatan - operasional,
+  };
+}
+
+// FITUR KHAS: tampilkan hasil hitungBersihHariIni() ke section #fitur-khas
+function renderKhas(hasil) {
+  elKhasPendapatan.textContent = formatRupiah(hasil.pendapatan);
+  elKhasOperasional.textContent = formatRupiah(hasil.operasional);
+  elKhasBersih.textContent = formatRupiah(hasil.bersih);
+  elKhasBersih.classList.toggle("negatif", hasil.bersih < 0); // merah jika rugi
+}
+
+// Satu pintu untuk memperbarui SEMUA tampilan setiap kali data berubah
+function renderSemua() {
+  renderDaftar(daftarTransaksi);
+  renderRingkasan(hitungRingkasan(daftarTransaksi));
+  renderKhas(hitungBersihHariIni(daftarTransaksi));
+}
+
 // W3: hapus satu transaksi berdasarkan id
 function hapusTransaksi(id) {
   // filter mengembalikan array BARU berisi semua transaksi kecuali yang id-nya sama
   daftarTransaksi = daftarTransaksi.filter((t) => t.id !== id);
   simpanData(daftarTransaksi);
-  renderDaftar(daftarTransaksi);
+  renderSemua();
 }
 
 // ---------- Event listener ----------
@@ -190,10 +299,18 @@ form.addEventListener("submit", (event) => {
   event.preventDefault(); // cegah halaman reload
 
   const transaksi = bacaForm();
+
+  // W6: kalau ada error, tampilkan dan berhenti (data TIDAK disimpan)
+  const error = validasiForm(transaksi);
+  if (Object.keys(error).length > 0) {
+    tampilkanError(error);
+    return;
+  }
+
   daftarTransaksi.push(transaksi);
   simpanData(daftarTransaksi);
 
-  renderDaftar(daftarTransaksi);
+  renderSemua();
 
   form.reset();
 });
@@ -201,6 +318,7 @@ form.addEventListener("submit", (event) => {
 // Terpanggil saat tombol Reset diklik DAN saat form.reset() dipanggil
 form.addEventListener("reset", () => {
   fieldSifat.hidden = true;
+  tampilkanError({}); // W6: hapus semua pesan error
   inputKategori.querySelectorAll("optgroup").forEach((grup) => {
     grup.disabled = true;
   });
@@ -213,4 +331,4 @@ inputTanggal.defaultValue = tanggalHariIni();
 inputTanggal.value = tanggalHariIni();
 aturKategori();
 daftarTransaksi = muatData(); // W4: baca data lama saat halaman dibuka / di-refresh
-renderDaftar(daftarTransaksi);
+renderSemua();

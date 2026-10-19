@@ -55,3 +55,31 @@
   - `muatData()` memakai `localStorage.getItem` + `JSON.parse`, dengan `try/catch` dan `Array.isArray` supaya data rusak tidak membuat aplikasi crash
   - `simpanData()` dipanggil setelah `push` (submit) dan `filter` (hapus); `muatData()` dipanggil sekali di bagian inisialisasi sebelum render
 - Diubah: -
+
+## 7. W5 — Ringkasan
+
+- Prompt: "Sekarang bagaimana kode untuk fitur W5?"
+- Dipakai:
+  - app.js: `hitungRingkasan(daftar)` memakai `filter` + `reduce` untuk total pemasukan/pengeluaran, dan saldo
+  - app.js: `renderRingkasan(ringkasan)` memakai `formatRupiah` dan `classList.toggle("negatif", ...)`
+  - app.js: `renderSemua()` sebagai satu pintu render; pemanggilan `renderDaftar(daftarTransaksi)` di submit, hapus, dan inisialisasi diganti `renderSemua()`
+  - style.css: selector `#saldo.negatif` ditambahkan ke aturan `#khas-bersih.negatif` (saldo minus berwarna merah)
+- Diubah: <!-- TODO: isi sendiri setelah dites -->
+
+## 8. Fitur khas — Pendapatan bersih hari ini
+
+- Prompt: "Sekarang buatkan aku fitur khasnya terlebih dahulu."
+- Dipakai (app.js):
+  - `hitungBersihHariIni(daftar)`: `filter` transaksi dengan tanggal = `tanggalHariIni()`, lalu `filter` + `reduce` untuk pendapatan dan pengeluaran yang `sifat === "operasional"`; bersih = pendapatan − operasional
+  - `renderKhas(hasil)`: isi tiga `<dd>` di `#fitur-khas` dengan `formatRupiah`, dan `classList.toggle("negatif", ...)` jika bersih minus
+  - Satu baris `renderKhas(hitungBersihHariIni(daftarTransaksi))` ditambahkan di `renderSemua()`
+- Diubah: <!-- TODO: isi sendiri setelah dites -->
+
+## 9. W6 — Validasi form
+
+- Prompt: "Lanjut buatkan fitur W6."
+- Dipakai (app.js):
+  - `validasiForm(data)` mengembalikan objek error per field: tanggal, jenis, kategori wajib; sifat wajib hanya untuk pengeluaran; nominal dicek dengan `!(nominal > 0)` supaya `NaN` juga tertangkap
+  - `tampilkanError(error)` menulis pesan ke `#error-<field>` dan `classList.toggle("invalid", ...)` ke `#input-<field>`; `tampilkanError({})` menghapus semua pesan
+  - Di listener submit: `if (Object.keys(error).length > 0) { tampilkanError(error); return; }` sebelum `push`; di listener reset: `tampilkanError({})`
+- Diubah: <!-- TODO: isi sendiri setelah dites -->

@@ -98,7 +98,8 @@ dd {
 }
 
 /* JS menambah class "negatif" jika biaya operasional > pendapatan */
-#khas-bersih.negatif {
+#khas-bersih.negatif,
+#saldo.negatif {
   color: var(--keluar);
 }
 
