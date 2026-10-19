@@ -1,0 +1,279 @@
+:root {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --text: #1f2933;
+  --muted: #6b7785;
+  --border: #d9dee3;
+  --primary: #00aa13;
+  --masuk: #15803d;
+  --keluar: #dc2626;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Layout */
+.app-header {
+  background: var(--primary);
+  color: #fff;
+  padding: 20px 16px;
+  text-align: center;
+}
+
+.app-header h1 {
+  margin: 0 0 4px;
+  font-size: 1.4rem;
+}
+
+.app-header p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+main > section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+}
+
+/* Ringkasan dan fitur khas */
+dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+dl > div {
+  background: var(--bg);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+dt {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+dd {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+#fitur-khas {
+  border-color: var(--primary);
+  border-width: 2px;
+}
+
+#khas-bersih {
+  color: var(--masuk);
+}
+
+/* JS menambah class "negatif" jika biaya operasional > pendapatan */
+#khas-bersih.negatif {
+  color: var(--keluar);
+}
+
+/* Form */
+.field {
+  margin-bottom: 14px;
+}
+
+label,
+legend {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+fieldset {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+fieldset label {
+  font-weight: 400;
+  margin-bottom: 2px;
+}
+
+.opsional {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+input[type="date"],
+input[type="number"],
+input[type="text"],
+select {
+  width: 100%;
+  padding: 10px;
+  font: inherit;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+}
+
+input:focus,
+select:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.error {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--keluar);
+}
+
+.error:empty {
+  display: none;
+}
+
+/* Field yang gagal validasi: JS tinggal menambah class "invalid".
+   Pakai input.invalid / select.invalid (specificity 0,1,1) supaya tidak kalah
+   dari input[type="..."] yang specificity-nya juga 0,1,1 tapi ditulis lebih awal. */
+input.invalid,
+select.invalid {
+  border-color: var(--keluar);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#btn-simpan {
+  flex: 1;
+  background: var(--primary);
+  color: #fff;
+}
+
+#btn-reset {
+  background: var(--border);
+  color: var(--text);
+}
+
+/* Daftar transaksi (class ini dipakai saat JS me-render <li>) */
+#daftar-transaksi {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#daftar-kosong {
+  color: var(--muted);
+  margin: 0;
+}
+
+.transaksi-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.transaksi-item:last-child {
+  border-bottom: none;
+}
+
+.transaksi-info {
+  min-width: 0;
+}
+
+.transaksi-kategori {
+  font-weight: 600;
+}
+
+.transaksi-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.transaksi-nominal {
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.transaksi-nominal.pemasukan {
+  color: var(--masuk);
+}
+
+.transaksi-nominal.pengeluaran {
+  color: var(--keluar);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: var(--border);
+}
+
+.badge.operasional {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge.pribadi {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.btn-hapus {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  background: transparent;
+  color: var(--keluar);
+  border: 1px solid var(--keluar);
+}
+
+footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}

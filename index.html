@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catatan Keuangan Driver Ojol</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <h1>Catatan Keuangan Driver Ojol</h1>
+    <p>Catat pemasukan dan pengeluaran, pisahkan biaya operasional dari pribadi.</p>
+  </header>
+
+  <main>
+
+    <!-- FITUR KHAS: pendapatan bersih hari ini = pendapatan - biaya operasional -->
+    <section id="fitur-khas" aria-labelledby="judul-khas">
+      <h2 id="judul-khas">Pendapatan Bersih Hari Ini</h2>
+      <dl>
+        <div>
+          <dt>Pendapatan hari ini</dt>
+          <dd id="khas-pendapatan">Rp0</dd>
+        </div>
+        <div>
+          <dt>Biaya operasional hari ini</dt>
+          <dd id="khas-operasional">Rp0</dd>
+        </div>
+        <div>
+          <dt>Pendapatan bersih</dt>
+          <dd id="khas-bersih">Rp0</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- W5: ringkasan keseluruhan -->
+    <section id="ringkasan" aria-labelledby="judul-ringkasan">
+      <h2 id="judul-ringkasan">Ringkasan</h2>
+      <dl>
+        <div>
+          <dt>Total pemasukan</dt>
+          <dd id="total-pemasukan">Rp0</dd>
+        </div>
+        <div>
+          <dt>Total pengeluaran</dt>
+          <dd id="total-pengeluaran">Rp0</dd>
+        </div>
+        <div>
+          <dt>Saldo</dt>
+          <dd id="saldo">Rp0</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- W1 + W6: form tambah transaksi. novalidate supaya validasi dan pesan error ditangani JS -->
+    <section id="form-section" aria-labelledby="judul-form">
+      <h2 id="judul-form">Tambah Transaksi</h2>
+
+      <form id="form-transaksi" novalidate>
+
+        <div class="field">
+          <label for="input-tanggal">Tanggal</label>
+          <input type="date" id="input-tanggal" name="tanggal" required>
+          <p class="error" id="error-tanggal" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="input-jenis">Jenis</label>
+          <select id="input-jenis" name="jenis" required>
+            <option value="">-- Pilih jenis --</option>
+            <option value="pemasukan">Pemasukan</option>
+            <option value="pengeluaran">Pengeluaran</option>
+          </select>
+          <p class="error" id="error-jenis" role="alert"></p>
+        </div>
+
+        <!-- Khusus pengeluaran: operasional atau pribadi. Disembunyikan sampai jenis = pengeluaran -->
+        <fieldset class="field" id="field-sifat" hidden>
+          <legend>Sifat pengeluaran</legend>
+          <label>
+            <input type="radio" name="sifat" value="operasional"> Operasional (bensin, servis, dll.)
+          </label>
+          <label>
+            <input type="radio" name="sifat" value="pribadi"> Pribadi
+          </label>
+          <p class="error" id="error-sifat" role="alert"></p>
+        </fieldset>
+
+        <div class="field">
+          <label for="input-kategori">Kategori</label>
+          <select id="input-kategori" name="kategori" required>
+            <option value="">-- Pilih kategori --</option>
+            <!-- Dikelompokkan per jenis; JS memvalidasi kategori harus cocok dengan jenis -->
+            <optgroup label="Pemasukan" data-jenis="pemasukan">
+              <option value="Order">Order</option>
+              <option value="Tip & Bonus">Tip &amp; Bonus</option>
+              <option value="Pemasukan Lain">Pemasukan Lain</option>
+            </optgroup>
+            <optgroup label="Pengeluaran" data-jenis="pengeluaran">
+              <option value="Bensin">Bensin</option>
+              <option value="Servis">Servis</option>
+              <option value="Makan">Makan</option>
+              <option value="Pulsa & Kuota">Pulsa &amp; Kuota</option>
+              <option value="Pengeluaran Lain">Pengeluaran Lain</option>
+            </optgroup>
+          </select>
+          <p class="error" id="error-kategori" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="input-nominal">Nominal (Rp)</label>
+          <input type="number" id="input-nominal" name="nominal" inputmode="numeric" min="1" step="1" placeholder="25000" required>
+          <p class="error" id="error-nominal" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="input-catatan">Catatan <span class="opsional">(opsional)</span></label>
+          <input type="text" id="input-catatan" name="catatan" placeholder="Contoh: isi bensin Pertalite">
+        </div>
+
+        <div class="actions">
+          <button type="submit" id="btn-simpan">Simpan</button>
+          <button type="reset" id="btn-reset">Reset</button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- BONUS (isi setelah W1-W6 dan fitur khas selesai):
+         - Filter & pencarian: jenis, kategori, rentang tanggal, kata kunci catatan
+         - Budget per kategori + peringatan
+         - Ekspor / impor JSON
+         - Edit transaksi (bisa memakai ulang form di atas)
+    -->
+
+    <!-- W2 + W3: daftar transaksi, di-render dari JS ke #daftar-transaksi -->
+    <section id="daftar-section" aria-labelledby="judul-daftar">
+      <h2 id="judul-daftar">Daftar Transaksi</h2>
+      <p id="daftar-kosong">Belum ada transaksi.</p>
+      <ul id="daftar-transaksi"></ul>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>ETS Pemrograman Web &mdash; Personal Money Management</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
